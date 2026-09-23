@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VinKælderen – dit digitale vinkort</title>
+  <style>
+    :root { --ink: #161616; --muted: #77736e; --cream: #f4f1ec; --paper: #fff; --wine: #161616; --wine-dark: #161616; --gold: #c8b8a0; --line: #d9d4cd; --shadow: 0 16px 40px rgba(0,0,0,.08); }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--cream); font: 14px/1.5 Arial, Helvetica, sans-serif; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { max-width: 1320px; margin: auto; padding: 0 38px 70px; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 25px 0 34px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; gap: 19px; align-items: center; color: var(--ink); }
+    .brand-logos { display: flex; align-items: center; gap: 17px; }
+    .brand-logo { display: block; width: auto; height: 48px; object-fit: contain; }
+    .brand-logo.tiende { width: 59px; }
+    .brand-logo.dfd { width: 78px; }
+    .brand-divider { width: 1px; height: 43px; background: var(--line); }
+    .brand strong { display: block; font: 700 25px Georgia, serif; letter-spacing: .2em; }
+    .brand small { color: var(--muted); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .pill { border: 1px solid var(--line); border-radius: 0; padding: 9px 14px; color: var(--muted); background: transparent; }
+    .suggestion-button { border: 1px solid var(--ink); border-radius: 0; padding: 10px 14px; color: var(--ink); background: transparent; font-weight: 700; letter-spacing: .04em; }
+    .suggestion-button.active { color: #fff; background: var(--ink); border-color: var(--ink); }
+    .clear-suggestions { border: 0; padding: 7px 5px; color: var(--muted); background: transparent; font-size: 12px; }
+    .profile { width: 38px; height: 38px; border: 1px solid var(--ink); border-radius: 0; color: var(--ink); background: transparent; font-weight: 700; }
+    .hero { display: grid; grid-template-columns: 1.2fr .8fr; gap: 32px; align-items: center; padding: 42px 48px; border-radius: 26px; color: #fff; background: radial-gradient(circle at 86% 20%, #9d4963 0, transparent 34%), linear-gradient(120deg, var(--wine-dark), var(--wine)); box-shadow: var(--shadow); }
+    .eyebrow { margin: 0 0 10px; color: #e7bd83; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { max-width: 560px; margin: 0 0 14px; font: 700 clamp(32px, 4vw, 56px)/1.04 Georgia, serif; }
+    .hero p { max-width: 530px; margin: 0; color: #eadbe0; font-size: 16px; }
+    .hero-art { display: flex; justify-content: center; align-items: end; min-height: 150px; }
+    .bottle { position: relative; width: 55px; height: 140px; border-radius: 13px 13px 8px 8px; background: linear-gradient(90deg, #281d25, #6b3f4b 46%, #261b21); box-shadow: 12px 5px 0 rgba(0,0,0,.10); }
+    .bottle:before { content: ""; position: absolute; top: -38px; left: 13px; width: 29px; height: 47px; border-radius: 8px 8px 0 0; background: #332229; }
+    .bottle:after { content: "V"; position: absolute; left: 8px; right: 8px; top: 51px; padding: 8px 0; color: var(--wine); background: #f1d9b4; font: 700 19px Georgia, serif; text-align: center; }
+    .bottle:nth-child(2) { transform: translateY(18px) scale(.9); opacity: .84; }
+    .bottle:nth-child(3) { transform: translateY(8px) scale(.96); opacity: .72; }
+    .search-wrap { display: flex; gap: 10px; align-items: center; max-width: 760px; margin: 35px auto 42px; padding: 4px 4px 4px 0; position: relative; border-bottom: 1px solid var(--ink); background: transparent; }
+    .search-wrap input { min-width: 0; flex: 1; border: 0; outline: 0; padding: 13px 14px; color: var(--ink); background: transparent; font-size: 16px; }
+    .search-icon { padding-left: 14px; color: var(--wine); font-size: 21px; }
+    .search-wrap button { border: 1px solid var(--ink); border-radius: 0; padding: 10px 18px; color: #fff; background: var(--ink); font-weight: 700; }
+    .layout { display: grid; grid-template-columns: 238px 1fr; gap: 34px; }
+    aside { align-self: start; position: sticky; top: 20px; }
+    aside h2 { margin: 0 0 18px; font: 700 22px Georgia, serif; }
+    .filter-group { padding: 19px 0; border-top: 1px solid var(--line); }
+    .filter-group summary { display: flex; justify-content: space-between; align-items: center; cursor: pointer; list-style: none; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    .filter-group summary::-webkit-details-marker { display: none; }
+    .filter-group summary::after { content: "+"; color: var(--wine); font-size: 18px; font-weight: 400; letter-spacing: 0; }
+    .filter-group[open] summary::after { content: "−"; }
+    .filter-options { padding-top: 11px; }
+    .vintage-options { max-height: 286px; overflow-y: auto; padding-right: 8px; }
+    .data-filter-options { max-height: 286px; overflow-y: auto; padding-right: 8px; }
+    .nested-filter { margin: 10px 0 0 8px; padding: 9px 0 0 10px; border-top: 1px solid var(--line); border-left: 2px solid #eadbd6; }
+    .nested-filter summary { font-size: 11px; letter-spacing: .06em; }
+    .nested-filter strong { display: block; margin-bottom: 7px; color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .region-choice { margin: 0; color: var(--ink); font-size: 14px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+    label.filter-disabled { color: #c5b9b7; }
+    label.filter-disabled input { cursor: not-allowed; opacity: .45; }
+    .filter-group h3 { margin: 0 0 11px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+    label { display: flex; align-items: center; gap: 9px; margin: 9px 0; color: #554d52; }
+    input[type=checkbox] { accent-color: var(--wine); width: 16px; height: 16px; }
+    select, .range { width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 9px; color: var(--ink); background: var(--paper); }
+    .price-range { position: relative; height: 24px; margin: 7px 0 9px; }
+    .price-range:before { content: ""; position: absolute; top: 10px; right: 0; left: 0; height: 4px; border-radius: 4px; background: var(--line); }
+    .price-range:after { content: ""; position: absolute; top: 10px; left: var(--range-start, 0%); width: calc(var(--range-end, 100%) - var(--range-start, 0%)); height: 4px; border-radius: 4px; background: var(--wine); }
+    .price-range .range { position: absolute; z-index: 2; top: 0; left: 0; width: 100%; height: 24px; margin: 0; padding: 0; pointer-events: none; appearance: none; background: transparent; }
+    .price-range .range::-webkit-slider-runnable-track { height: 4px; background: transparent; }
+    .price-range .range::-moz-range-track { height: 4px; background: transparent; }
+    .price-range .range::-webkit-slider-thumb { width: 16px; height: 16px; margin-top: -6px; border: 2px solid var(--paper); border-radius: 50%; background: var(--wine); box-shadow: 0 0 0 1px var(--wine); pointer-events: auto; appearance: none; cursor: pointer; }
+    .price-range .range::-moz-range-thumb { width: 12px; height: 12px; border: 2px solid var(--paper); border-radius: 50%; background: var(--wine); box-shadow: 0 0 0 1px var(--wine); pointer-events: auto; cursor: pointer; }
+    .price-range #minPrice { z-index: 3; }
+    .price-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .price-fields label { margin: 0 0 4px; color: var(--muted); font-size: 11px; }
+    .price-input { width: 100%; margin-top: 9px; }
+    .price-fields .price-input { margin-top: 0; }
+    .range-label { display: flex; justify-content: space-between; margin-top: 5px; color: var(--muted); font-size: 12px; }
+    .content-head { display: flex; align-items: end; justify-content: space-between; margin-bottom: 18px; }
+    .content-head h2 { margin: 0; font: 700 30px Georgia, serif; letter-spacing: .01em; }
+    .content-head p { margin: 5px 0 0; color: var(--muted); }
+    .sort { border: 0; background: transparent; color: var(--muted); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .card { position: relative; min-height: 280px; padding: 19px; border: 1px solid var(--line); border-radius: 0; background: var(--paper); transition: transform .2s, box-shadow .2s; }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+    .card-top { display: flex; justify-content: space-between; align-items: start; }
+    .country { color: var(--muted); font-size: 12px; }
+    .favorite { border: 0; color: #c8b9bd; background: transparent; font-size: 24px; line-height: 1; }
+    .favorite.active { color: var(--wine); }
+    .wine-thumb { display: grid; place-items: center; height: 102px; margin: 12px 0 10px; border-radius: 0; background: #e7e2da; }
+    .wine-thumb.white { background: linear-gradient(135deg, #eee9d4, #d9c987); }
+    .wine-thumb.sparkling { background: linear-gradient(135deg, #f2e5bf, #d8b776); }
+    .mini-bottle { width: 31px; height: 75px; border-radius: 8px 8px 5px 5px; background: #54232f; box-shadow: 7px 4px 0 rgba(61, 25, 36, .18); }
+    .white .mini-bottle { background: #858553; }
+    .sparkling .mini-bottle { background: #b38d43; }
+    .card h3 { margin: 0 0 3px; font: 700 19px Georgia, serif; }
+    .producer { margin: 0; color: var(--muted); }
+    .tags { display: flex; flex-wrap: wrap; gap: 5px; margin: 13px 0; }
+    .tag { padding: 4px 8px; border-radius: 6px; color: var(--wine); background: #f2e8e9; font-size: 11px; }
+    .card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .price { color: var(--wine); font-size: 18px; font-weight: 800; }
+    .empty { grid-column: 1 / -1; padding: 50px 20px; border: 1px dashed #d8c9c2; border-radius: 15px; color: var(--muted); text-align: center; }
+    .load-more { display: block; margin: 28px auto 0; border: 1px solid var(--ink); border-radius: 0; padding: 11px 22px; color: var(--ink); background: transparent; font-weight: 700; }
+    .load-more[hidden] { display: none; }
+    @media (max-width: 850px) { .hero { grid-template-columns: 1fr; padding: 32px 27px; } .hero-art { display: none; } .layout { grid-template-columns: 1fr; } aside { position: static; } .filter-group { display: inline-block; width: 49%; vertical-align: top; padding-right: 15px; } .grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 560px) { .shell { padding: 0 16px 40px; } header { padding-top: 17px; } .pill { display: none; } .grid { grid-template-columns: 1fr; } .filter-group { width: 100%; } .search-wrap { margin-bottom: 26px; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><div class="brand-logos"><img class="brand-logo tiende" src="https://ms1.easyday.com/media/1906183/tiende-blk.png?maxWidth=400&amp;format=webp" alt="Restaurant Tiende"><span class="brand-divider"></span><img class="brand-logo dfd" src="https://ms1.easyday.com/media/1911824/ezgif.com-gif-to-webp.webp" alt="Den Fede Drue"></div><div><strong>VINKORT</strong><small>Restaurant &amp; bar</small></div></div>
+      <div class="header-actions"><button class="suggestion-button" id="showSuggestions">☆ Forslag (<span id="favoriteCount">0</span>)</button><button class="clear-suggestions" id="clearSuggestions">Ryd forslag</button><button class="profile">MK</button></div>
+    </header>
+    <div class="search-wrap"><span class="search-icon">⌕</span><input id="search" type="search" placeholder="Søg efter vin, producent, drue eller region..."><button id="clear">Ryd</button></div>
+    <main class="layout">
+      <aside>
+        <h2>Filtrér vine</h2>
+        <details class="filter-group"><summary>Vintype</summary><div class="filter-options data-filter-options" data-filter="type"></div></details>
+        <details class="filter-group"><summary>Land</summary><div class="filter-options"><label><input type="checkbox" name="country" value="Frankrig"> Frankrig <span>(5)</span></label><label><input type="checkbox" name="country" value="Italien"> Italien <span>(2)</span></label><label><input type="checkbox" name="country" value="Spanien"> Spanien <span>(2)</span></label><label><input type="checkbox" name="country" value="Tyskland"> Tyskland <span>(1)</span></label><label><input type="checkbox" name="country" value="Østrig"> Østrig <span>(1)</span></label><label><input type="checkbox" name="country" value="USA"> USA <span>(1)</span></label></div></details>
+        <details class="filter-group"><summary>Område</summary><div class="filter-options"><details class="nested-filter"><summary><label class="region-choice"><input type="checkbox" name="region" value="Bourgogne"> Bourgogne <span>(2)</span></label></summary><div class="filter-options"><details class="nested-filter"><summary>Chablis <span>(1)</span></summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Chablis"> Chablis <span>(1)</span></label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Les Vaillons"> Les Vaillons</label></div></div></details><details class="nested-filter"><summary>Côte de Beaune <span>(1)</span></summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Meursault"> Meursault <span>(1)</span></label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Les Narvaux"> Les Narvaux</label></div></div></details></div></details><details class="nested-filter"><summary>Champagne <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Montagne de Reims</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Aÿ"> Aÿ</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Les Ambonnays"> Les Ambonnays</label></div></div></details></div></details><details class="nested-filter"><summary>Rhône <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Nordrhône</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Châteauneuf-du-Pape"> Châteauneuf-du-Pape</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="La Crau"> La Crau</label></div></div></details></div></details><details class="nested-filter"><summary>Piemonte <span>(2)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Langhe</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Barolo"> Barolo</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Cannubi"> Cannubi</label></div></div></details><details class="nested-filter"><summary>Roero</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Alba"> Alba</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Bricco"> Bricco</label></div></div></details></div></details><details class="nested-filter"><summary>Rioja <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Rioja Alta</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Haro"> Haro</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Viña Ardanza"> Viña Ardanza</label></div></div></details></div></details><details class="nested-filter"><summary>Mosel <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Mittelmosel</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Bernkastel"> Bernkastel</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Bernkasteler Lay"> Bernkasteler Lay</label></div></div></details><details class="nested-filter"><summary>Terrassenmosel</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Cochem"> Cochem</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Cochemer Krampen"> Cochemer Krampen</label></div></div></details></div></details><details class="nested-filter"><summary>Wachau <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Wachau</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Dürnstein"> Dürnstein</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Kellerberg"> Kellerberg</label></div></div></details></div></details><details class="nested-filter"><summary>Loire <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Sancerre</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Sancerre"> Sancerre</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Le Chêne Marchand"> Le Chêne Marchand</label></div></div></details></div></details><details class="nested-filter"><summary>Napa Valley <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Stags Leap District</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Napa"> Napa</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Fay Vineyard"> Fay Vineyard</label></div></div></details></div></details><details class="nested-filter"><summary>Penedès <span>(1)</span></summary><div class="filter-options"><details class="nested-filter"><summary>Alt Penedès</summary><div class="filter-options"><label><input type="checkbox" name="commune" value="Sant Sadurní d'Anoia"> Sant Sadurní d'Anoia</label><div class="nested-filter"><strong>Marker</strong><label><input type="checkbox" name="mark" value="Font Jui"> Font Jui</label></div></div></details></div></details></div></details>
+        <details class="filter-group"><summary>Årgang</summary><div class="filter-options vintage-options"></div></details>
+        <details class="filter-group"><summary>Størrelse</summary><div class="filter-options data-filter-options" data-filter="size"></div></details>
+        <details class="filter-group"><summary>Drue</summary><div class="filter-options data-filter-options" data-filter="grape"></div></details>
+        <details class="filter-group"><summary>Producent</summary><div class="filter-options data-filter-options" data-filter="producer"></div></details>
+        <div class="filter-group"><h3>Pris pr. flaske</h3><div class="price-range"><input class="range" id="minPrice" type="range" min="50" max="1500" value="50" aria-label="Minimumspris pr. flaske"><input class="range" id="price" type="range" min="50" max="1500" value="1500" aria-label="Maksimal pris pr. flaske"></div><div class="price-fields"><div><label for="minPriceInput">Minimum</label><input class="price-input" id="minPriceInput" type="number" min="50" max="1500" step="1" value="50" aria-label="Minimumspris pr. flaske"></div><div><label for="priceInput">Maksimum</label><input class="price-input" id="priceInput" type="number" min="50" max="1500" step="1" value="1500" aria-label="Maksimal pris pr. flaske"></div></div><div class="range-label"><span id="minPriceValue">50 kr.</span><strong id="priceValue">1.500 kr.</strong></div></div>
+      </aside>
+      <section>
+        <div class="content-head"><div><h2>Alle vine</h2><p id="resultCount">12 vine i samlingen</p></div><select class="sort" id="sort"><option value="sheet">Rækkefølge i vinkortet</option><option value="name">Sortér: Navn</option><option value="price">Pris: lav til høj</option><option value="year">Årgang: nyeste</option></select></div>
+        <div class="grid" id="wineGrid"></div>
+      </section>
+    </main>
+  </div>
+  <script>
+    const sheetUrl = 'https://docs.google.com/spreadsheets/d/1Nb8VhFsYJbhbc6Pr0boC-G2hBTkB7vHEkgbd-i3liUg/gviz/tq?tqx=out:csv';
+    let wines = [];
+    const favorites = new Set();
+    let showSuggestions = false;
+    const priceTolerance = 250;
+    const $ = id => document.getElementById(id);
+    function parseCsv(text) {
+      const rows = [];
+      let row = [], cell = '', quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i], next = text[i + 1];
+        if (char === '"' && quoted && next === '"') { cell += '"'; i++; continue; }
+        if (char === '"') { quoted = !quoted; continue; }
+        if (char === ',' && !quoted) { row.push(cell.trim()); cell = ''; continue; }
+        if ((char === '\n' || char === '\r') && !quoted) {
+          if (char === '\r' && next === '\n') i++;
+          row.push(cell.trim()); cell = '';
+          if (row.some(Boolean)) rows.push(row);
+          row = [];
+          continue;
+        }
+        cell += char;
+      }
+      if (cell || row.length) { row.push(cell.trim()); rows.push(row); }
+      return rows;
+    }
+    function onlineWines(csv) {
+      const rows = parseCsv(csv);
+      if (rows.length < 2) throw new Error('Google-arket indeholder ingen vinrækker');
+      const headers = rows[0].map(header => header.toLowerCase().trim());
+      const find = (...names) => names.map(name => headers.indexOf(name)).find(index => index >= 0);
+      const index = {
+        name: find('navn / cuvée / appellation', 'navn / beskrivelse (ordret fra pdf)', 'navn på vin', 'navn', 'vin'),
+        producer: find('producent'),
+        year: find('årgang', 'vintage'),
+        grape: find('druer', 'drue'),
+        type: find('type / farve', 'type', 'vintype', 'farve'),
+        country: find('land'),
+        region: find('område / region', 'område / sektion (pdf)', 'område', 'region'),
+        subregion: find('appellation', 'underområde'),
+        price: find('pris (dkk)', 'pris dkk', 'pris', 'price'),
+        size: find('størrelse', 'flaskestørrelse', 'format')
+      };
+      if (index.name === undefined) throw new Error('Google-arket mangler en navnekolonne');
+      return rows.slice(1).map(values => {
+        const value = key => index[key] === undefined ? '' : (values[index[key]] || '').trim();
+        const rawType = value('type');
+        const typeText = `${rawType} ${value('name')} ${value('grape')}`.toLowerCase();
+        const types = [];
+        if (/mousserende|champagne|cava|prosecco|crémant|cremant|franciacorta|brut|blanc de|bobler/.test(typeText)) types.push('Mousserende');
+        if (/rosé|rose/.test(typeText)) types.push('Rosé');
+        if (/hvid|white|chardonnay|riesling|sauvignon blanc|chenin|viognier|pinot gris|grüner|albarino|alvarinho|gewürztraminer/.test(typeText)) types.push('Hvidvin');
+        if (!types.length) types.push('Rødvin');
+        const sourceTypes = rawType.split(',').map(item => item.trim()).filter(Boolean);
+        types.push(rawType, ...sourceTypes);
+        const uniqueTypes = [...new Set(types)];
+        const type = uniqueTypes[0];
+        const price = Number(value('price').replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+        const grape = value('grape');
+        const grapes = grape.split(/[,;/]/)
+          .map(item => item.replace(/\s*\(?\d+(?:[.,]\d+)?\s*%\)?/g, '').replace(/\s+/g, ' ').trim())
+          .filter(Boolean);
+        const uniqueGrapes = [...new Set(grapes)];
+        return { name: value('name'), producer: value('producer'), type, types: uniqueTypes, sourceTypes, country: value('country') || 'Andre', region: value('region'), subregion: value('subregion'), commune: '', mark: '', grape, grapes: uniqueGrapes, size: value('size'), year: value('year'), price, cls: uniqueTypes.includes('Mousserende') ? 'sparkling' : uniqueTypes.includes('Hvidvin') || uniqueTypes.includes('Rosé') ? 'white' : '' };
+      }).filter(wine => wine.name);
+    }
+    async function loadOnlineWines() {
+      try {
+        const response = await fetch(sheetUrl);
+        if (!response.ok) throw new Error(`Google Sheets svarer med HTTP ${response.status}`);
+        const imported = onlineWines(await response.text());
+        if (imported.length) { wines = imported; addDataFilterChoices(); render(); }
+      } catch (error) {
+        console.error('Google-arket kunne ikke hentes.', error);
+      }
+    }
+    function addDataFilterChoices() {
+      const typeOptions = document.querySelector('[data-filter="type"]');
+      typeOptions.innerHTML = '';
+      const commonTypes = ['Rødvin', 'Hvidvin', 'Mousserende', 'Rosé'];
+      const sourceTypes = [...new Set(wines.flatMap(wine => wine.sourceTypes).filter(Boolean))]
+        .sort((a, b) => a.localeCompare(b, 'da'));
+      [...commonTypes, ...sourceTypes].filter((value, index, values) => values.indexOf(value) === index).forEach(type => {
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'type';
+        input.value = type;
+        input.addEventListener('change', render);
+        label.append(input, ` ${type} `);
+        const count = document.createElement('span');
+        count.textContent = '(0)';
+        label.appendChild(count);
+        typeOptions.appendChild(label);
+      });
+      const countryOptions = document.querySelector('input[name=country]').closest('.filter-options');
+      const countries = [...new Set(wines.map(w => w.country).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'da'));
+      countries.forEach(country => {
+        if (countryOptions.querySelector(`input[name=country][value="${CSS.escape(country)}"]`)) return;
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'country';
+        input.value = country;
+        input.addEventListener('change', render);
+        label.append(input, ` ${country} `);
+        const count = document.createElement('span');
+        count.textContent = `(${wines.filter(wine => wine.country === country).length})`;
+        label.appendChild(count);
+        countryOptions.appendChild(label);
+      });
+      const vintageOptions = document.querySelector('.vintage-options');
+      vintageOptions.innerHTML = '';
+      const vintages = [...new Set(wines.map(wine => wine.year).filter(Boolean))].sort((a, b) => {
+        const left = vintageSortKey(a), right = vintageSortKey(b);
+        return left.group - right.group || right.year - left.year || a.localeCompare(b, 'da');
+      });
+      vintages.forEach(vintage => {
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'vintage';
+        input.value = vintage;
+        input.addEventListener('change', render);
+        label.append(input, ` ${vintage}`);
+        vintageOptions.appendChild(label);
+      });
+      ['size', 'grape', 'producer'].forEach(filterName => {
+        const options = document.querySelector(`[data-filter="${filterName}"]`);
+        options.innerHTML = '';
+        const values = [...new Set(wines.flatMap(wine => filterName === 'grape' ? wine.grapes : [wine[filterName]]).filter(Boolean))]
+          .sort((a, b) => a.localeCompare(b, 'da', { numeric: true }));
+        values.forEach(value => {
+          const label = document.createElement('label');
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.name = filterName;
+          input.value = value;
+          input.addEventListener('change', render);
+          label.append(input, ` ${value}`);
+          options.appendChild(label);
+        });
+      });
+      const maxPrice = Math.max(...wines.map(w => w.price).filter(Number.isFinite), 1500);
+      $('price').max = maxPrice;
+      $('price').value = maxPrice;
+      $('minPrice').max = maxPrice;
+      $('minPriceInput').max = maxPrice;
+      $('minPrice').value = $('minPrice').min;
+      $('minPriceInput').value = $('minPrice').min;
+      $('priceInput').max = maxPrice;
+      $('priceInput').value = maxPrice;
+      $('priceValue').textContent = `${maxPrice.toLocaleString('da-DK')} kr.`;
+    }
+    function addRegionChoices() {
+      const regions = new Set(['Bourgogne', 'Champagne', 'Rhône', 'Piemonte', 'Rioja', 'Mosel', 'Wachau', 'Loire', 'Napa Valley', 'Penedès']);
+      document.querySelectorAll('.filter-group > .filter-options > .nested-filter').forEach(area => {
+        const summary = area.querySelector(':scope > summary');
+        const name = summary.textContent.trim().replace(/\s+\(\d+\)$/, '');
+        if (!regions.has(name) || summary.querySelector('input[name=region]')) return;
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.name = 'region';
+        input.value = name;
+        input.addEventListener('change', render);
+        summary.prepend(input, ' ');
+      });
+    }
+    function selectedValues(name) { return [...document.querySelectorAll(`input[name=${name}]:checked`)].map(x => x.value); }
+    function selectedTypes() { return selectedValues('type'); }
+    function vintageSortKey(value) {
+      const text = String(value || '').trim().toLowerCase();
+      if (text === 'nv') return { group: 0, year: 0 };
+      const vMatch = text.match(/^v\s*(\d{1,2})/);
+      if (vMatch) return { group: 1, year: Number(vMatch[1]) };
+      const digits = text.match(/\d+/);
+      if (!digits) return { group: 3, year: 0 };
+      const number = digits[0];
+      const year = number.length >= 4
+        ? Number(number.slice(0, 4))
+        : 2000 + Number(number.slice(0, 2));
+      return { group: 2, year };
+    }
+    function matchesFilters(wine, excludedFilter, selections) {
+     const query = $('search').value.toLowerCase().trim();
+     const activeSelections = selections || {
+       type: selectedValues('type'),
+       country: selectedValues('country'),
+       region: selectedValues('region'),
+       vintage: selectedValues('vintage'),
+       size: selectedValues('size'),
+       grape: selectedValues('grape'),
+       producer: selectedValues('producer'),
+       commune: selectedValues('commune'),
+       mark: selectedValues('mark')
+     };
+     const matches = (!query || Object.values(wine).join(' ').toLowerCase().includes(query))
+       && (!activeSelections.type.length || excludedFilter === 'type' || activeSelections.type.some(type => wine.types.includes(type)))
+       && (!activeSelections.country.length || excludedFilter === 'country' || activeSelections.country.includes(wine.country))
+       && (!activeSelections.region.length || excludedFilter === 'region' || activeSelections.region.includes(wine.region))
+       && (!activeSelections.vintage.length || excludedFilter === 'vintage' || activeSelections.vintage.includes(wine.year))
+       && (!activeSelections.size.length || excludedFilter === 'size' || activeSelections.size.includes(wine.size))
+       && (!activeSelections.grape.length || excludedFilter === 'grape' || activeSelections.grape.some(grape => wine.grapes.includes(grape)))
+       && (!activeSelections.producer.length || excludedFilter === 'producer' || activeSelections.producer.includes(wine.producer))
+       && (!activeSelections.commune.length || excludedFilter === 'commune' || activeSelections.commune.includes(wine.commune))
+       && (!activeSelections.mark.length || excludedFilter === 'mark' || activeSelections.mark.includes(wine.mark))
+       && wine.price >= Number($('minPrice').value) - priceTolerance
+       && wine.price <= Number($('price').value) + priceTolerance;
+     return matches;
+    }
+    function updateFilterAvailability() {
+      if (wines.length > 2000) {
+       ['type', 'country', 'region', 'vintage', 'size', 'grape', 'producer', 'commune', 'mark'].forEach(filterName => {
+         const valueKey = filterName === 'type' ? 'type' : filterName === 'country' ? 'country' : filterName === 'region' ? 'region' : filterName === 'vintage' ? 'year' : filterName;
+         const counts = new Map();
+         wines.forEach(wine => {
+           const values = filterName === 'type' ? wine.types : filterName === 'grape' ? wine.grapes : [wine[valueKey]];
+           values.forEach(value => counts.set(value, (counts.get(value) || 0) + 1));
+         });
+         document.querySelectorAll(`input[name=${filterName}]`).forEach(input => {
+           const label = input.closest('label') || input.closest('summary');
+           input.disabled = false;
+           label.classList.remove('filter-disabled');
+           const count = label.querySelector('span');
+           if (count) count.textContent = `(${counts.get(input.value) || 0})`;
+         });
+       });
+       return;
+      }
+     const selections = {
+       type: selectedValues('type'),
+       country: selectedValues('country'),
+       region: selectedValues('region'),
+       vintage: selectedValues('vintage'),
+       size: selectedValues('size'),
+       grape: selectedValues('grape'),
+       producer: selectedValues('producer'),
+       commune: selectedValues('commune'),
+       mark: selectedValues('mark')
+     };
+     ['type', 'country', 'region', 'vintage', 'size', 'grape', 'producer', 'commune', 'mark'].forEach(filterName => {
+       const valueKey = filterName === 'type' ? 'type' : filterName === 'country' ? 'country' : filterName === 'region' ? 'region' : filterName === 'vintage' ? 'year' : filterName;
+       const counts = new Map();
+       wines.filter(wine => matchesFilters(wine, filterName, selections)).forEach(wine => {
+         const values = filterName === 'type' ? wine.types : filterName === 'grape' ? wine.grapes : [wine[valueKey]];
+         values.forEach(value => counts.set(value, (counts.get(value) || 0) + 1));
+       });
+       document.querySelectorAll(`input[name=${filterName}]`).forEach(input => {
+         const available = counts.has(input.value);
+         const label = input.closest('label') || input.closest('summary');
+         input.disabled = !available;
+         label.classList.toggle('filter-disabled', !available);
+         const count = label.querySelector('span');
+         if (count) {
+           count.textContent = `(${counts.get(input.value) || 0})`;
+         }
+       });
+     });
+    }
+    function render() {
+     updateFilterAvailability();
+     const query = $('search').value.toLowerCase().trim(), types = selectedTypes(), countries = [...document.querySelectorAll('input[name=country]:checked')].map(x => x.value), regions = [...document.querySelectorAll('input[name=region]:checked')].map(x => x.value), vintages = [...document.querySelectorAll('input[name=vintage]:checked')].map(x => x.value), sizes = selectedValues('size'), grapes = selectedValues('grape'), producers = selectedValues('producer'), minPrice = Number($('minPrice').value), maxPrice = Number($('price').value);
+     const communes = selectedValues('commune'), marks = selectedValues('mark');
+     let shown = wines.filter(w => (!query || Object.values(w).join(' ').toLowerCase().includes(query)) && (!types.length || types.some(type => w.types.includes(type))) && (!countries.length || countries.includes(w.country)) && (!regions.length || regions.includes(w.region)) && (!vintages.length || vintages.includes(w.year)) && (!sizes.length || sizes.includes(w.size)) && (!grapes.length || grapes.some(grape => w.grapes.includes(grape))) && (!producers.length || producers.includes(w.producer)) && (!communes.length || communes.includes(w.commune)) && (!marks.length || marks.includes(w.mark)) && w.price >= minPrice - priceTolerance && w.price <= maxPrice + priceTolerance && (!showSuggestions || favorites.has(w.name)));
+      const sort = $('sort').value;
+      if (sort === 'price') shown.sort((a,b) => a.price-b.price);
+      if (sort === 'year') shown.sort((a,b) => {
+        const left = vintageSortKey(a.year), right = vintageSortKey(b.year);
+        return left.group - right.group || right.year - left.year || a.name.localeCompare(b.name, 'da');
+      });
+      if (sort === 'name') shown.sort((a,b) => a.name.localeCompare(b.name));
+     const totalShown = shown.length;
+     $('resultCount').textContent = `${totalShown} ${totalShown === 1 ? 'vin' : 'vine'} i samlingen`;
+      $('minPriceValue').textContent = `${minPrice.toLocaleString('da-DK')} kr.`;
+      $('priceValue').textContent = `${maxPrice.toLocaleString('da-DK')} kr.`;
+      const priceRange = document.querySelector('.price-range');
+      const priceMin = Number($('minPrice').min), priceMax = Number($('price').max);
+      priceRange.style.setProperty('--range-start', `${((minPrice - priceMin) / (priceMax - priceMin)) * 100}%`);
+      priceRange.style.setProperty('--range-end', `${((maxPrice - priceMin) / (priceMax - priceMin)) * 100}%`);
+      $('wineGrid').innerHTML = shown.length ? shown.map(w => `<article class="card"><div class="card-top"><span class="country">${w.country} · ${w.region}</span><button class="favorite ${favorites.has(w.name) ? 'active' : ''}" data-fav="${w.name}" aria-label="Markér som forslag">${favorites.has(w.name) ? '★' : '☆'}</button></div><div class="wine-thumb ${w.cls}"><div class="mini-bottle"></div></div><h3>${w.name}</h3><p class="producer">${w.producer}</p><div class="tags"><span class="tag">${w.type}</span>${w.grape ? `<span class="tag">${w.grape}</span>` : ''}${w.size ? `<span class="tag">${w.size} l</span>` : ''}${w.year ? `<span class="tag">${w.year}</span>` : ''}</div><div class="card-foot"><span class="price">${w.price.toLocaleString('da-DK')} kr.</span></div></article>`).join('') : `<div class="empty">${showSuggestions ? 'Du har ingen stjernede forslag endnu.<br>Stjernemarkér vine for at samle forslag til gæsten.' : 'Ingen vine matcher dine filtre.<br>Prøv en anden søgning eller ryd filtrene.'}</div>`;
+      $('favoriteCount').textContent = favorites.size;
+      $('showSuggestions').classList.toggle('active', showSuggestions);
+      $('showSuggestions').innerHTML = `${showSuggestions ? '★ Vis alle' : '☆ Forslag'} (<span id="favoriteCount">${favorites.size}</span>)`;
+      document.querySelectorAll('[data-fav]').forEach(btn => btn.onclick = () => { const name = btn.dataset.fav; favorites.has(name) ? favorites.delete(name) : favorites.add(name); render(); });
+    }
+    $('price').addEventListener('input', () => {
+      if (Number($('price').value) < Number($('minPrice').value)) $('minPrice').value = $('price').value;
+      $('priceInput').value = $('price').value;
+      $('minPriceInput').value = $('minPrice').value;
+      render();
+    });
+    $('priceInput').addEventListener('input', () => {
+      const value = Math.min(Math.max(Number($('priceInput').value) || Number($('price').min), Number($('price').min)), Number($('price').max));
+      if (value < Number($('minPrice').value)) {
+        $('minPrice').value = value;
+        $('minPriceInput').value = value;
+      }
+      $('price').value = value;
+      render();
+    });
+    $('minPrice').addEventListener('input', () => {
+      if (Number($('minPrice').value) > Number($('price').value)) $('price').value = $('minPrice').value;
+      $('minPriceInput').value = $('minPrice').value;
+      $('priceInput').value = $('price').value;
+      render();
+    });
+    $('minPriceInput').addEventListener('input', () => {
+      const value = Math.min(Math.max(Number($('minPriceInput').value) || Number($('minPrice').min), Number($('minPrice').min)), Number($('minPrice').max));
+      if (value > Number($('price').value)) {
+        $('price').value = value;
+        $('priceInput').value = value;
+      }
+      $('minPrice').value = value;
+      render();
+    });
+    document.querySelectorAll('input, select').forEach(el => el.addEventListener('input', render));
+    document.querySelectorAll('input[type=checkbox]').forEach(el => el.addEventListener('change', render));
+    $('showSuggestions').onclick = () => { showSuggestions = !showSuggestions; render(); };
+    $('clearSuggestions').onclick = () => { favorites.clear(); showSuggestions = false; render(); };
+    $('clear').onclick = () => { $('search').value = ''; document.querySelectorAll('input[name=type], input[name=country], input[name=region], input[name=vintage], input[name=size], input[name=grape], input[name=producer], input[name=commune], input[name=mark]').forEach(x => x.checked = false); $('minPrice').value = $('minPrice').min; $('minPriceInput').value = $('minPrice').min; $('price').value = $('price').max; $('priceInput').value = $('price').max; render(); };
+    addDataFilterChoices();
+    addRegionChoices();
+    render();
+    loadOnlineWines();
+  </script>
+</body>
+</html>
